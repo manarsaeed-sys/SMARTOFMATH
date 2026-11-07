@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحدّي المجموعات والفترات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg1:#ffe29f;--bg2:#ff9a9e;--card:#ffffff;--text:#2d2a4a;--muted:#6b6890;--line:#e4e0f5;--p:#7c4dff;--p2:#ff5fa2;--ok:#1fbf75;--okbg:#dcfaea;--bad:#ff4d6d;--badbg:#ffe3e8;--hover:#f1ebff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg1:#2b1f5c;--bg2:#5c1f4a;--card:#241f3d;--text:#f3f0ff;--muted:#b5afd9;--line:#3d3668;--ok:#4be39b;--okbg:#17382b;--bad:#ff8099;--badbg:#411c28;--hover:#322a5a}}
+:root[data-theme="dark"]{color-scheme:dark;--bg1:#2b1f5c;--bg2:#5c1f4a;--card:#241f3d;--text:#f3f0ff;--muted:#b5afd9;--line:#3d3668;--ok:#4be39b;--okbg:#17382b;--bad:#ff8099;--badbg:#411c28;--hover:#322a5a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;font-family:'Cairo',Tahoma,sans-serif;color:var(--text);background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--card);border-radius:26px;box-shadow:0 14px 40px rgba(0,0,0,.18);width:100%;max-width:640px;padding:28px;text-align:center}
+.hide{display:none}
+h1{font-size:2rem;font-weight:900;margin:8px 0}
+.big{font-size:4.5rem;line-height:1}
+.sub{color:var(--muted);font-size:1.1rem;margin:0 0 20px}
+.btn{border:0;cursor:pointer;font:inherit;font-weight:900;font-size:1.15rem;color:#fff;background:linear-gradient(90deg,var(--p),var(--p2));padding:12px 34px;border-radius:999px;transition:transform .2s}
+.btn:hover{transform:scale(1.05)}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:10px}
+.pill{background:var(--hover);color:var(--p);padding:4px 14px;border-radius:999px}
+.bar{height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:22px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb347,var(--p2),var(--p));transition:width .4s}
+.q{font-size:1.4rem;font-weight:900;line-height:1.8;margin:0 0 20px}
+.opts{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+@media(max-width:480px){.opts{grid-template-columns:1fr}}
+.opt{font:inherit;font-weight:700;font-size:1.15rem;color:var(--text);background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;transition:.2s}
+.opt:hover:not(:disabled){border-color:var(--p);background:var(--hover);transform:translateY(-2px)}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.bad{border-color:var(--bad);background:var(--badbg)}
+.opt:disabled{cursor:default}
+.m{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.fb{margin-top:18px;border-radius:16px;padding:14px;font-weight:700;animation:pop .4s}
+.fb.ok{background:var(--okbg);color:var(--ok)}.fb.bad{background:var(--badbg);color:var(--bad)}
+.fb small{display:block;color:var(--text);font-weight:400;margin-top:6px}
+.fb .btn{margin-top:12px;font-size:1rem;padding:10px 28px}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.stars{font-size:2.4rem;margin:6px 0}
+.score{font-size:3rem;font-weight:900;color:var(--p)}
+</style>
+</head>
+<body>
+<div class="card" id="start">
+  <div class="big">🧮🚀</div>
+  <h1>تحدّي المجموعات والفترات</h1>
+  <p class="sub">الصف التاسع · الوحدة الأولى · الدرس الأول<br>١٥ سؤالاً ممتعاً، هل أنت جاهز يا بطل؟</p>
+  <button class="btn" onclick="start()">ابدأ التحدّي 🎯</button>
+</div>
+
+<div class="card hide" id="quiz">
+  <div class="top"><span class="pill" id="num"></span><span class="pill">⭐ <span id="sc">0</span></span><span class="pill" id="streak"></span></div>
+  <div class="bar"><i id="bar"></i></div>
+  <p class="q" id="q"></p>
+  <div class="opts" id="opts"></div>
+  <div id="fb"></div>
+</div>
+
+<div class="card hide" id="end">
+  <div class="big">🏆</div>
+  <h1>انتهى التحدّي!</h1>
+  <div class="stars" id="stars"></div>
+  <div class="score"><span id="fs"></span> / 15</div>
+  <p class="sub" id="endmsg"></p>
+  <button class="btn" onclick="start()">العب مرة أخرى 🔄</button>
+</div>
+
+<script>
+// الإجابة الصحيحة هي الأولى دائماً، ويتم خلط الخيارات عند العرض
+const M=t=>'<span class="m">'+t+'</span>';
+const Q=[
+["مجموعة الأعداد الكلية التي تقل عن 5 بطريقة سرد العناصر هي:",[M("{0, 1, 2, 3, 4}"),M("{1, 2, 3, 4}"),M("{0, 1, 2, 3, 4, 5}"),M("{1, 2, 3, 4, 5}")],"الأعداد الكلية تبدأ من 0، والعدد 5 نفسه لا يدخل لأن المطلوب «أقل من 5»."],
+["المجموعة "+M("{x | x &lt; 12, x ∈ W}")+" بطريقة سرد العناصر هي:",[M("{0, 1, 2, …, 11}"),M("{1, 2, …, 12}"),M("{0, 1, 2, …, 12}"),M("{1, 2, …, 11}")],"W هي الأعداد الكلية فتبدأ من 0، وتنتهي عند 11 لأن 12 ليس أقل من 12."],
+["مجموعة مضاعفات العدد 5 التي تقل عن 25 أو تساويه هي:",[M("{5, 10, 15, 20, 25}"),M("{0, 5, 10, 15, 20, 25}"),M("{5, 10, 15, 20}"),M("{10, 15, 20, 25}")],"نضرب 5 في 1 و2 و3 و4 و5 كما في الكتاب (k بين 1 و5)."],
+["مجموعة حل المعادلة 2x − 8 = 0 هي:",[M("{4}"),M("{−4}"),M("{8}"),M("∅")],"2x = 8 إذن x = 4، فالمجموعة مفردة."],
+["الرمز "+M("a ∈ A")+" يُقرأ:",["a ينتمي إلى المجموعة A","a لا ينتمي إلى المجموعة A","A مجموعة خالية","a مجموعة جزئية من A"],"الرمز ∈ يدلّ على «ينتمي إلى»."],
+["الرمز المستخدم للدلالة على «لا ينتمي إلى» هو:",[M("∉"),M("∈"),M("∅"),M("W")],"نضع خطاً على ∈ فيصبح ∉، مثل b ∉ A."],
+["الرمز الذي يدلّ على مجموعة الأعداد الكلية هو:",[M("W"),M("Z"),M("N"),M("R")],"W من كلمة whole، ومعناها «كلّياً». أما Z فللأعداد الصحيحة."],
+["عند كتابة مجموعة بطريقة سرد العناصر، فإن ترتيب العناصر:",["غير مهم، ولا نكرّر كتابة العنصر","مهم ويجب أن يكون تصاعدياً","غير مهم ويجب تكرار العنصر","يغيّر المجموعة دائماً"],"الكتاب يوضّح أن الترتيب غير مهم وأننا لا نكرّر كتابة العنصر."],
+["المجموعة "+M("D = {x | 3x − 12 = 0}")+" تُصنَّف على أنها:",["مفردة","خالية","منتهية من عنصرين","غير منتهية"],"3x = 12 إذن x = 4 فقط، أي عنصر واحد."],
+["المجموعة "+M("{x | x = 3k, k ∈ W, 0 &lt; x &lt; 2}")+" هي:",["خالية ∅","مفردة {3}","{0, 3}","غير منتهية"],"قيم x الممكنة 0 و3 و6… ولا شيء منها بين 0 و2، فالمجموعة خالية."],
+["المجموعة "+M("O = {x | x = 2k + 1, k ∈ Z}")+" (الأعداد الصحيحة الفردية) هي مجموعة:",["غير منتهية","منتهية","خالية","مفردة"],"الأعداد الفردية تستمر في الاتجاهين دون توقف: …, −3, −1, 1, 3, …"],
+["مجموعة حل المتباينة x − 8 > 1 بالصفة المميزة هي:",[M("{x | x &gt; 9}"),M("{x | x &gt; 7}"),M("{x | x &lt; 9}"),M("{x | x &gt; 8}")],"نجمع 8 للطرفين فنحصل على x > 9."],
+["التعبير عن المتباينة "+M("x ≥ 5")+" باستعمال رمز الفترة هو:",[M("[5, ∞)"),M("(5, ∞)"),M("(−∞, 5]"),M("(−∞, 5)")],"القوس المغلق [ لأن 5 داخل الحل (≥)، وتمتد الفترة نحو المالانهاية."],
+["المتباينة التي يمثلها رمز الفترة "+M("(−∞, −1)")+" هي:",[M("x &lt; −1"),M("x ≤ −1"),M("x &gt; −1"),M("x ≥ −1")],"القوس المفتوح عند −1 يعني أن −1 غير مشمول، والفترة تمتد لليسار فهي أصغر من −1."],
+["لماذا نستعمل دائماً القوس المفتوح مع "+M("∞")+"؟",["لأن المالانهاية ليست عدداً ولا يمكن الوصول إليها","لأنها عدد سالب دائماً","لأن الفترة تكون محدودة","لأنه شكل مقبول فقط"],"المالانهاية ليست عدداً، لذلك لا يمكن أن تكون عنصراً في الفترة."]
+];
+const good=["رائع! إجابة دقيقة يا بطل 🌟","ممتاز! أنت عبقري رياضيات 🚀","عمل مذهل! استمر 🏆","يا لك من ذكي! 🎯","أحسنت! أتقنت المهارة 💪"];
+const nice=["لا بأس! المحاولة طريق النجاح 💪","اقتربت جداً! ركّز في السؤال القادم 🔍","من الأخطاء نتعلّم، أنت بطل لأنك تحاول 🌱","لا تستسلم! الإجابة القادمة لك ✨"];
+const $=id=>document.getElementById(id);
+let list,i,score,streak;
+function shuf(a){for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function show(id){["start","quiz","end"].forEach(x=>$(x).classList.toggle("hide",x!==id))}
+function start(){list=shuf(Q.map(q=>q.slice()));i=0;score=0;streak=0;$("sc").textContent=0;show("quiz");load()}
+function load(){
+  const q=list[i];
+  $("num").textContent="السؤال "+(i+1)+" من 15";
+  $("bar").style.width=(i/15*100)+"%";
+  $("streak").textContent=streak>=2?"🔥 "+streak+" متتالية":"";
+  $("q").innerHTML=q[0];$("fb").innerHTML="";
+  const box=$("opts");box.innerHTML="";
+  shuf(q[1].map((t,k)=>({t,ok:k===0}))).forEach(o=>{
+    const b=document.createElement("button");b.className="opt";b.innerHTML=o.t;b.dataset.ok=o.ok;
+    b.onclick=()=>answer(b,o.ok);box.appendChild(b)});
+}
+function answer(btn,ok){
+  document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;if(b.dataset.ok==="true")b.classList.add("ok")});
+  if(ok){score++;streak++}else{streak=0;btn.classList.add("bad")}
+  $("sc").textContent=score;
+  const last=i===14;
+  $("fb").innerHTML='<div class="fb '+(ok?"ok":"bad")+'">'+(ok?"✅ إجابة صحيحة! ":"❌ إجابة خاطئة. ")+pick(ok?good:nice)+"<small>💡 "+list[i][2]+'</small><button class="btn" onclick="next()">'+(last?"عرض النتيجة 🏁":"السؤال التالي ⏩")+"</button></div>";
+}
+function next(){i++;i<15?load():end()}
+function end(){
+  show("end");$("fs").textContent=score;
+  $("stars").textContent=score>=13?"⭐⭐⭐":score>=9?"⭐⭐":"⭐";
+  $("endmsg").textContent=score>=13?"أنت نجم الرياضيات! أداء استثنائي 🌟":score>=9?"أداء جميل جداً! قليل من المراجعة وتصل للقمة 🚀":"بداية طيبة! راجع الدرس وأعد المحاولة، وستتفوّق 💪";
+}
+</script>
+</body>
+</html>

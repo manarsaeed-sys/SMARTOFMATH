@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة أبطال الرياضيات - الصف التاسع</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        #game-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        h1 { color: #4a4a4a; margin-bottom: 10px; }
+        .btn {
+            background: #ff758c;
+            background: linear-gradient(to right, #ff7eb3, #ff758c);
+            border: none;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
+            font-family: 'Cairo', sans-serif;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(255, 117, 140, 0.6); }
+        .hidden { display: none !important; }
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .correct { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .wrong { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .question-title { color: #2C3E50; font-size: 22px; margin-bottom: 25px; line-height: 1.5; }
+        .level-badge {
+            background: #f1c40f;
+            color: #fff;
+            padding: 5px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(241, 196, 15, 0.4);
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: #2ecc71;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen">
+            <h1 style="font-size: 2em;">🎮 أبطال الرياضيات 🏆</h1>
+            <h3 style="color: #666;">الصف التاسع - المجموعات والفترات</h3>
+            <p style="font-size: 1.1em; line-height: 1.6; color: #555;">مرحباً بك يا بطل! أعددنا لك 15 تحدياً تفاعلياً لقياس ذكائك ومهاراتك في الرياضيات. هل أنت مستعد لجمع النقاط؟</p>
+            <br>
+            <button class="btn" onclick="startGame()" style="font-size: 1.3em;">ابدأ التحدي الآن 🚀</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="quiz-screen" class="hidden">
+            <div class="progress-bar"><div id="progress" class="progress"></div></div>
+            <div id="level-badge" class="level-badge">المستوى الأول: المكتشفون</div>
+            <div style="color: #888; font-size: 14px; margin-bottom: 10px;">السؤال <span id="q-num">1</span> من 15</div>
+            <h2 id="question-text" class="question-title">السؤال</h2>
+            <div id="options-container"></div>
+            <div id="feedback-box" class="feedback hidden"></div>
+            <button id="next-btn" class="btn hidden" style="background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);" onclick="nextQuestion()">السؤال التالي ➡️</button>
+        </div>
+
+        <!-- شاشة النهاية -->
+        <div id="end-screen" class="hidden">
+            <h1 style="font-size: 2.5em;">🎉 النتيجة النهائية 🎉</h1>
+            <div style="font-size: 4em; margin: 20px 0; color: #764ba2; font-weight: bold;" id="score-text"></div>
+            <p id="final-message" style="font-size: 1.2em; color: #444; line-height: 1.5; padding: 0 20px;"></p>
+            <button class="btn" onclick="location.reload()" style="margin-top: 30px;">العب مرة أخرى 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "ما هي الطريقة التي نكتب بها عناصر المجموعة داخل الرمز { } ونفصل بين كل عنصر وآخر بفاصلة؟", options: ["طريقة الصفة المميزة", "طريقة سرد العناصر", "طريقة الفترة غير المحدودة"], answer: 1, msg: "بداية قوية! أنت تضع قدمك على أول طريق التميز الرياضي. 🚀" },
+            { q: "ما هو الرمز الرياضي الذي نستخدمه للتعبير عن 'مجموعة الأعداد الكلية'؟", options: ["Z", "E", "W"], answer: 2, msg: "ذاكرة ممتازة! انطلق بثقة نحو السؤال التالي. 🧠✨" },
+            { q: "كيف نُعبر رياضياً عن المجموعة الخالية التي لا تحتوي على أي عنصر؟", options: ["∅ أو { }", "{0}", "∞"], answer: 0, msg: "إجابة دقيقة! الصفر يختلف تماماً عن المجموعة الخالية، تفكيرك عميق! 💡" },
+            { q: "مجموعة حل المعادلة 3x - 12 = 0 هي {4}. ماذا نُسمي هذا النوع من المجموعات؟", options: ["مجموعة خالية", "مجموعة غير منتهية", "مجموعة مفردة"], answer: 2, msg: "بطل المعادلات! تحليل منطقي وسريع. 🎯" },
+            { q: "مجموعة الأعداد الكلية التي تزيد على 7، أي P = {8, 9, 10, ...}، تُعد:", options: ["مجموعة منتهية", "مجموعة غير منتهية", "مجموعة مفردة"], answer: 1, msg: "لقد أنهيت المستوى الأول بنجاح باهر! استعد للتحدي القادم. 🏆" },
+            { q: "ما هي الميزة الرئيسية لاستخدام طريقة 'الصفة المميزة للمجموعة'؟", options: ["كتابة كل الأرقام بشكل فردي", "توفير طريقة مختصرة للتعبير عن الحل", "رسم الأعداد على خط مستقيم"], answer: 1, msg: "رائع! أنت تتقن اختصار المسائل المعقدة بذكاء. ⚡" },
+            { q: "ما هي مجموعة حل المتباينة 5x - 8 > 12؟", options: ["{x | x > 4}", "{x | x < 4}", "{x | x ≥ 4}"], answer: 0, msg: "حساباتك دقيقة جداً! استمر بهذا التركيز. 🧮" },
+            { q: "قاعدة ذهبية: عند قسمة طرفي متباينة صحيحة على عدد سالب، ماذا يجب أن نفعل لرمز المتباينة؟", options: ["نبقيه كما هو", "نغير اتجاه رمز المتباينة", "نحذفه تماماً"], answer: 1, msg: "انتباه ممتاز للتفاصيل الدقيقة! هذه هي مهارات الخبراء. 🕵️‍♂️" },
+            { q: "حل المتباينة 2x + 10 ≤ 14 باستخدام الصفة المميزة هو:", options: ["{x | x ≥ 2}", "{x | x ≤ 2}", "{x | x < -2}"], answer: 1, msg: "خطوات صحيحة ونتائج مبهرة! أنت على الطريق الصحيح. 🛤️" },
+            { q: "كيف نقرأ المجموعة {x | x > 4}؟", options: ["مجموعة الأعداد الحقيقية الأقل من 4", "مجموعة الأعداد التي تساوي 4", "مجموعة الأعداد الحقيقية الأكبر من 4"], answer: 2, msg: "لقد عبرت المستوى الثاني بجدارة! مستواك يرتفع مثل المتباينة المتزايدة! 📈" },
+            { q: "كيف نكتب المتباينة x ≥ a باستخدام رمز الفترة غير المحدودة؟", options: ["[a, ∞)", "(a, ∞)", "(-∞, a]"], answer: 0, msg: "فهم عميق للرموز! المالانهاية تنتظر إبداعك. 🌌" },
+            { q: "الرمز المفتوح ( أو ) يُستخدم دائماً مع:", options: ["الأرقام الزوجية فقط", "المالانهاية، لأنها ليست عدداً", "المتباينات التي تحتوي مساواة"], answer: 1, msg: "إجابة نموذجية! أنت تفهم 'لماذا' وليس فقط 'كيف'. 🧠" },
+            { q: "عند تمثيل المتباينة x < -1 على خط الأعداد، ما هو شكل الدائرة المستخدمة؟", options: ["دائرة مغلقة", "دائرة مفتوحة", "مربع مغلق"], answer: 1, msg: "عين ثاقبة! التمييز بين الدائرة المفتوحة والمغلقة يصنع الفارق. 🎯" },
+            { q: "إذا كان التمثيل البياني على خط الأعداد يبدأ من العدد 5 بدائرة مغلقة ويتجه نحو اليمين، فما هو رمز الفترة؟", options: ["(5, ∞)", "(-∞, 5]", "[5, ∞)"], answer: 2, msg: "خطوة واحدة تفصلك عن النهاية! أنت تثبت تفوقك. 🏅" },
+            { q: "ما هي المتباينة التي يمثلها رمز الفترة (-∞, 8)؟", options: ["x ≤ 8", "x > 8", "x < 8"], answer: 2, msg: "إجابة صحيحة! مسك الختام يا بطل. 🎊" }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            answered = false;
+            let q = questions[currentQuestion];
+            document.getElementById('q-num').innerText = currentQuestion + 1;
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('feedback-box').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            // Update Progress
+            let progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+
+            // Update Level Badge
+            let badge = document.getElementById('level-badge');
+            if (currentQuestion < 5) {
+                badge.innerText = "المستوى الأول: المكتشفون 🔍";
+                badge.style.background = "#f1c40f";
+            } else if (currentQuestion < 10) {
+                badge.innerText = "المستوى الثاني: أبطال المتباينات ⚔️";
+                badge.style.background = "#e67e22";
+            } else {
+                badge.innerText = "المستوى الثالث: لغز الفترات (مستوى الخبراء) 👑";
+                badge.style.background = "#e74c3c";
+            }
+
+            let optionsHtml = '';
+            for(let i=0; i<q.options.length; i++){
+                optionsHtml += `<button class="btn" style="background: #f8f9fa; color: #333; border: 2px solid #ddd; text-align: right; padding-right: 20px;" onclick="checkAnswer(${i}, this)">${q.options[i]}</button>`;
+            }
+            document.getElementById('options-container').innerHTML = optionsHtml;
+        }
+
+        function checkAnswer(index, btnElement) {
+            if(answered) return;
+            answered = true;
+            let q = questions[currentQuestion];
+            let feedback = document.getElementById('feedback-box');
+            
+            let allBtns = document.getElementById('options-container').children;
+            for(let btn of allBtns) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+
+            if(index === q.answer) {
+                score++;
+                btnElement.style.background = '#d4edda';
+                btnElement.style.borderColor = '#c3e6cb';
+                btnElement.style.opacity = '1';
+                feedback.innerHTML = "✅ إجابة صحيحة!<br><br><span style='font-weight:normal;'>" + q.msg + "</span>";
+                feedback.className = "feedback correct";
+            } else {
+                btnElement.style.background = '#f8d7da';
+                btnElement.style.borderColor = '#f5c6cb';
+                btnElement.style.opacity = '1';
+                allBtns[q.answer].style.background = '#d4edda';
+                allBtns[q.answer].style.opacity = '1';
+                feedback.innerHTML = "❌ للأسف إجابة خاطئة!<br><br><span style='font-weight:normal;'>لا بأس، الخطأ خطوة نحو التعلم. الإجابة الصحيحة كانت: " + q.options[q.answer] + "</span>";
+                feedback.className = "feedback wrong";
+            }
+            
+            feedback.classList.remove('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+            
+            if(currentQuestion === questions.length - 1) {
+                document.getElementById('next-btn').innerText = "عرض النتيجة النهائية 🏆";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if(currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            
+            document.getElementById('score-text').innerText = score + " / " + questions.length;
+            
+            let finalMsg = "";
+            if(score === 15) {
+                finalMsg = "أسطورة في الرياضيات! 🌟 لقد أثبتّ أنك خبير حقيقي في المجموعات والفترات. لا يوجد سؤال يستطيع إيقافك!";
+            } else if(score >= 11) {
+                finalMsg = "أداء رائع جداً! 👍 لقد أظهرت فهماً ممتازاً للدرس. ببعض المراجعة البسيطة ستصل إلى القمة.";
+            } else if(score >= 7) {
+                finalMsg = "مجهود طيب! 😊 أنت تعرف الأساسيات جيداً، لكن المستوى الخبير يحتاج للمزيد من التدريب.";
+            } else {
+                finalMsg = "لا تستسلم! 💪 الرياضيات تحتاج إلى ممارسة. راجع صفحات الدرس (8 إلى 16) وجرب مرة أخرى، أنا متأكد أنك ستتحسن!";
+            }
+            document.getElementById('final-message').innerText = finalMsg;
+        }
+    </script>
+</body>
+</html>

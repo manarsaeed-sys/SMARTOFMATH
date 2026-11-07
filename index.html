@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابتي التعليمية</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: Tahoma, Arial, sans-serif;
+      background: linear-gradient(135deg, #e0f2fe, #ede9fe);
+      display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .container {
+      background: white; width: 100%; max-width: 650px; padding: 45px 25px;
+      border-radius: 25px; text-align: center;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+    }
+    h1 { color: #253b70; margin-bottom: 12px; }
+    p { color: #64748b; margin-bottom: 35px; font-size: 17px; }
+    .buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .btn {
+      text-decoration: none; color: white; padding: 25px 12px; border-radius: 18px;
+      font-size: 21px; font-weight: bold; transition: 0.3s;
+    }
+    .math { background: linear-gradient(135deg, #2563eb, #4f46e5); }
+    .group { background: linear-gradient(135deg, #059669, #0d9488); }
+    .btn:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    footer { margin-top: 35px; color: #94a3b8; font-size: 13px; }
+    @media (max-width: 450px) { .buttons { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>🌟 بوابتي التعليمية</h1>
+    <p>اختاري النشاط الذي ترغبين بالدخول إليه</p>
+    <div class="buttons">
+      <a href="math.html" class="btn math">📐 الرياضيات</a>
+      <a href="group.html" class="btn group">👥 المجموعات</a>
+    </div>
+    <footer>منصة التعلم التفاعلي</footer>
+  </main>
+</body>
+</html>
